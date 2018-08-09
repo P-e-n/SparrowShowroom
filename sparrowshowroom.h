@@ -5,6 +5,7 @@
 
 #include <QLocalSocket>
 #include <QDataStream>
+#include <QGraphicsScene>
 
 class QLocalServer;
 
@@ -30,13 +31,19 @@ private:
     void clientConnected();
     void handleSocketStateChanged(QLocalSocket::LocalSocketState socketState);
     void readSocketData();
-
+    void showImageOnView(QString imagePath, int index);
 
     Ui::SparrowShowroom *ui;
     QLocalServer* server;
     QLocalSocket* socket;
     QDataStream socketDataStream;
     quint32 blockSize;
+
+    //ToDo: Use QList to make this easy extentable
+    QGraphicsScene * graphicsScene1 = new QGraphicsScene();
+    QGraphicsScene * graphicsScene2 = new QGraphicsScene();
+    QGraphicsScene * graphicsScene3 = new QGraphicsScene();
+    QGraphicsScene * graphicsScene4 = new QGraphicsScene();
 
 };
 
