@@ -11,7 +11,8 @@
 
 SparrowShowroom::SparrowShowroom(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::SparrowShowroom)
+    ui(new Ui::SparrowShowroom),
+    displayTotal(4)
 {
     server = new QLocalServer(this);
     socket = nullptr;
@@ -20,7 +21,20 @@ SparrowShowroom::SparrowShowroom(QWidget *parent) :
         return;
     }
     connect(this, SIGNAL(add_log(QString)), this, SLOT(on_log_added(QString)));
+    for (int i = 0; i < displayTotal; ++i) {
+        graphicsViews.push_back(new QGraphicsView());
+        graphicsScenes.push_back(new QGraphicsScene());
+        lineEdits.push_back(new QLineEdit());
+    }
     ui->setupUi(this);
+    ui->gridLayout->addWidget(graphicsViews[0], 0, 0);
+    ui->gridLayout->addWidget(lineEdits[0], 1, 0);
+    ui->gridLayout->addWidget(graphicsViews[1], 0, 1);
+    ui->gridLayout->addWidget(lineEdits[1], 1, 1);
+    ui->gridLayout->addWidget(graphicsViews[2], 2, 0);
+    ui->gridLayout->addWidget(lineEdits[2], 3, 0);
+    ui->gridLayout->addWidget(graphicsViews[3], 2, 1);
+    ui->gridLayout->addWidget(lineEdits[3], 3, 1);
     log_ui = this;
 
     connect(server, &QLocalServer::newConnection, this, &SparrowShowroom::clientConnected);
@@ -84,39 +98,21 @@ void SparrowShowroom::handleSocketStateChanged(QLocalSocket::LocalSocketState so
 //ToDo: Refactor the duplicated code.
 void SparrowShowroom::showImageOnView(QString imagePath, int index)
 {
-    QImage image = QImage(imagePath);
-    if (!image.isNull())
-    {
-        QPixmap pixmap = QPixmap::fromImage(image);
-        if (index == 0)
-        {
-            graphicsScene1->clear();
-            graphicsScene1->addPixmap(pixmap);
-            ui->graphicsView_1->setScene(graphicsScene1);
-            ui->graphicsView_1->fitInView(graphicsScene1->sceneRect(), Qt::KeepAspectRatio);
-        }
-        else if (index == 1)
-        {
-            graphicsScene2->clear();
-            graphicsScene2->addPixmap(pixmap);
-            ui->graphicsView_2->setScene(graphicsScene2);
-            ui->graphicsView_2->fitInView(graphicsScene2->sceneRect(), Qt::KeepAspectRatio);
-        }
-        else if (index == 2)
-        {
-            graphicsScene3->clear();
-            graphicsScene3->addPixmap(pixmap);
-            ui->graphicsView_3->setScene(graphicsScene3);
-            ui->graphicsView_3->fitInView(graphicsScene3->sceneRect(), Qt::KeepAspectRatio);
-        }
-        else if (index == 3)
-        {
-            graphicsScene4->clear();
-            graphicsScene4->addPixmap(pixmap);
-            ui->graphicsView_4->setScene(graphicsScene4);
-            ui->graphicsView_4->fitInView(graphicsScene4->sceneRect(), Qt::KeepAspectRatio);
-        }
+    if (index >= displayTotal) {
+        qInfo("Index out of bound");
+        return;
     }
+    QImage image = QImage(imagePath);
+    if (image.isNull()) {
+        qInfo("Cannot open image path=%s", imagePath.toStdString().c_str());
+        return;
+    }
+    QPixmap pixmap = QPixmap::fromImage(image);
+    auto graphicScene = graphicsScenes[index];
+    graphicScene->clear();
+    graphicScene->addPixmap(pixmap);
+    graphicsViews[index]->setScene(graphicScene);
+    graphicsViews[index]->fitInView(graphicScene->sceneRect(), Qt::KeepAspectRatio);
 }
 
 void SparrowShowroom::readSocketData()

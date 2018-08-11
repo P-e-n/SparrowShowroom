@@ -5,7 +5,11 @@
 
 #include <QLocalSocket>
 #include <QDataStream>
+#include <QGraphicsView>
 #include <QGraphicsScene>
+#include <QLineEdit>
+
+#include <vector>
 
 class QLocalServer;
 
@@ -34,6 +38,11 @@ private:
     void showImageOnView(QString imagePath, int index);
 
     Ui::SparrowShowroom *ui;
+    int displayTotal;
+    std::vector<QGraphicsView*> graphicsViews;
+    std::vector<QGraphicsScene*> graphicsScenes;
+    std::vector<QLineEdit*> lineEdits;
+
     QLocalServer* server;
     QLocalSocket* socket;
     QDataStream socketDataStream;
